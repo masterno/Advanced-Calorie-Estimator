@@ -11,11 +11,70 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Minimal typography for README content */
+        #readme-content {
+            line-height: 1.7;
+        }
+        #readme-content h1, 
+        #readme-content h2, 
+        #readme-content h3, 
+        #readme-content h4 {
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+        #readme-content h1 { font-size: 1.75rem; }
+        #readme-content h2 { font-size: 1.5rem; }
+        #readme-content h3 { font-size: 1.25rem; }
+        #readme-content p { margin: 0.75rem 0; }
+        #readme-content ul, #readme-content ol { 
+            margin: 0.75rem 0 0.75rem 1.25rem; 
+            padding-left: 1rem; 
+        }
+        #readme-content li { margin: 0.4rem 0; }
+        #readme-content a { color: #4f46e5; text-decoration: underline; }
+        #readme-content code { 
+            background: #f3f4f6; 
+            padding: 0.1rem 0.3rem; 
+            border-radius: 0.25rem; 
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.95em;
+        }
+        #readme-content pre {
+            background: #0b1020; 
+            color: #e5e7eb;
+            padding: 0.75rem; 
+            border-radius: 0.5rem; 
+            overflow: auto; 
+            margin: 1rem 0; 
+        }
+        #readme-content blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 0.75rem;
+            color: #6b7280;
+            margin: 0.75rem 0;
+        }
+        #readme-content table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 1rem 0; 
+            font-size: 0.95rem;
+        }
+        #readme-content th, #readme-content td { 
+            border: 1px solid #e5e7eb; 
+            padding: 0.5rem 0.6rem; 
+        }
+        #readme-content th { background: #f9fafb; text-align: left; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl p-8 m-4">
-        
+    <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl p-8 m-4 relative">
+        <!-- Top-right About button inside the app card -->
+        <button id="open-readme" title="About this project" class="absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-white/90 border border-gray-200 shadow hover:bg-white flex items-center justify-center text-gray-700">
+          <span class="text-base font-semibold">?</span>
+          <span class="sr-only">Open Readme</span>
+        </button>
+
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-900">🚀 Advanced Calorie Estimator</h1>
             <p class="text-gray-500 mt-2">Powered by a machine learning model with engineered features.</p>
@@ -61,6 +120,10 @@
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
+            // Improve Markdown line break behavior
+            if (window.marked && marked.setOptions) {
+                marked.setOptions({ breaks: true, gfm: true });
+            }
             // Coefficients from the final Linear Regression model trained on engineered features (USER'S RESULTS)
             const COEFFS = {
                 'Age': 1.9526,
@@ -190,11 +253,5 @@
         </div>
       </div>
     </div>
-    
-    <!-- Floating (?) About button -->
-    <button id="open-readme" title="About this project" class="fixed top-4 right-4 z-50 h-10 w-10 rounded-full bg-white/90 border border-gray-200 shadow hover:bg-white flex items-center justify-center text-gray-700">
-      <span class="text-lg font-semibold">?</span>
-      <span class="sr-only">Open Readme</span>
-    </button>
 </body>
 </html>
