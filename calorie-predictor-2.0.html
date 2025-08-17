@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Calorie Estimator 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl p-8 m-4">
+        
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">🚀 Advanced Calorie Estimator</h1>
+            <p class="text-gray-500 mt-2">Powered by a machine learning model with engineered features.</p>
+        </div>
+
+        <form id="calorie-form" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="age" class="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                    <input type="number" id="age" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition" placeholder="e.g., 35">
+                </div>
+                <div>
+                    <label for="gender" class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                    <select id="gender" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition">
+                        <option value="0">Female</option>
+                        <option value="1">Male</option>
+                    </select>
+                </div>
+            </div>
+             <div>
+                <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
+                <input type="number" id="weight" step="0.1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition" placeholder="e.g., 70.5">
+            </div>
+            <div>
+                <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">Session Duration (hours)</label>
+                <input type="number" id="duration" step="0.1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition" placeholder="e.g., 1.5">
+            </div>
+            <div>
+                <label for="avg_bpm" class="block text-sm font-medium text-gray-700 mb-1">Average Heart Rate (BPM)</label>
+                <input type="number" id="avg_bpm" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition" placeholder="e.g., 140">
+            </div>
+            
+            <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition transform hover:scale-105">
+                Calculate Calories
+            </button>
+        </form>
+
+        <div id="result-container" class="mt-8 text-center hidden">
+            <p class="text-gray-600">Estimated Calories Burned:</p>
+            <p id="result" class="text-4xl font-bold text-indigo-600 mt-2"></p>
+        </div>
+    </div>
+
+    <script>
+        // Coefficients from the final Linear Regression model trained on engineered features (USER'S RESULTS)
+        const COEFFS = {
+            'Age': 1.9526,
+            'Weight (kg)': -4.8886,
+            'Session_Duration (hours)': -950.4475,
+            'Avg_BPM': -0.5841,
+            'Gender_Male': 16.2391,
+            'Age^2': -0.0064,
+            'Age * Weight (kg)': -0.0348,
+            'Age * Session_Duration (hours)': -1.5721,
+            'Age * Avg_BPM': 0.0027,
+            'Age * Gender_Male': 0.6243,
+            'Weight (kg)^2': -0.0394,
+            'Weight (kg) * Session_Duration (hours)': 6.6299,
+            'Weight (kg) * Avg_BPM': 0.0695,
+            'Weight (kg) * Gender_Male': -0.1314,
+            'Session_Duration (hours)^2': 329.4016,
+            'Session_Duration (hours) * Avg_BPM': 2.6511, // Assuming this was the missing feature name from the previous model
+            'Session_Duration (hours) * Gender_Male': -61.4166,
+            'Avg_BPM^2': -0.0153,
+            'Avg_BPM * Gender_Male': -0.1154,
+            'Gender_Male^2': 16.2391,
+            'intercept': 571.2527
+        };
+
+        const form = document.getElementById('calorie-form');
+        const resultContainer = document.getElementById('result-container');
+        const resultElement = document.getElementById('result');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Get user inputs
+            const age = parseFloat(document.getElementById('age').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const duration = parseFloat(document.getElementById('duration').value);
+            const bpm = parseFloat(document.getElementById('avg_bpm').value);
+            const genderMale = parseInt(document.getElementById('gender').value, 10);
+
+            // Create a dictionary of the raw features
+            const features = {
+                'Age': age, 'Weight (kg)': weight, 'Session_Duration (hours)': duration, 'Avg_BPM': bpm, 'Gender_Male': genderMale,
+                'Age^2': age * age,
+                'Age * Weight (kg)': age * weight,
+                'Age * Session_Duration (hours)': age * duration,
+                'Age * Avg_BPM': age * bpm,
+                'Age * Gender_Male': age * genderMale,
+                'Weight (kg)^2': weight * weight,
+                'Weight (kg) * Session_Duration (hours)': weight * duration,
+                'Weight (kg) * Avg_BPM': weight * bpm,
+                'Weight (kg) * Gender_Male': weight * genderMale,
+                'Session_Duration (hours)^2': duration * duration,
+                'Session_Duration (hours) * Avg_BPM': duration * bpm,
+                'Session_Duration (hours) * Gender_Male': duration * genderMale,
+                'Avg_BPM^2': bpm * bpm,
+                'Avg_BPM * Gender_Male': bpm * genderMale,
+                'Gender_Male^2': genderMale * genderMale
+            };
+
+            // Calculate the prediction
+            let prediction = COEFFS.intercept;
+            for (const feature in features) {
+                if (COEFFS.hasOwnProperty(feature)) {
+                    // A check to handle the potentially misnamed feature
+                    const featureName = feature === 'Session_Duration (hours) * Avg_BPM' && COEFFS[':'] ? ':' : feature;
+                    prediction += features[feature] * COEFFS[featureName];
+                }
+            }
+
+            // Display the result
+            resultElement.textContent = `${Math.max(0, prediction).toFixed(0)} kcal`;
+            resultContainer.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
