@@ -41,9 +41,9 @@ Interaction terms (e.g., Weight (kg) * Avg_BPM): To let the model learn that the
 This expanded our feature set from 5 initial inputs to 20, giving the model much more information to learn from.
 
 Model Selection: Why Lasso Regression?
-With so many new features, a standard LinearRegression model was at high risk of overfitting—learning the noise in the data rather than the true patterns.
+We initially explored a standard LinearRegression model, but with so many new features, it was at high risk of overfitting—learning the noise in the data rather than the true patterns.
 
-We chose a Lasso (L1 Regularization) model to solve this. Lasso works by penalizing complex models and can shrink the coefficients of less important features all the way to zero, effectively performing automatic feature selection. This resulted in a simpler, more robust model that is better at generalizing to new, unseen data.
+To solve this, we upgraded to a Lasso (L1 Regularization) model. Lasso works by penalizing complex models and can shrink the coefficients of less important features all the way to zero, effectively performing automatic feature selection. This resulted in a simpler, more robust model that is better at generalizing to new, unseen data.
 
 Key Insights from the Model
 The final model produced some fascinating insights that go beyond simple formulas:
@@ -56,4 +56,13 @@ Diminishing Returns of Heart Rate: Interestingly, the model found that the effec
 
 Honest Performance: After cleaning the data, the model achieved an R-squared of ~0.75. This means it can explain about 75% of the variation in calories burned, which is a strong and, more importantly, honest measure of its performance on clean, reliable data.
 
-The final web app uses this trained Lasso model, along with the specific scaling parameters from the dataset, to make its predictions.
+Handling Model Limitations: Extrapolation Safeguard
+A key discovery during testing was that the model's training data had a maximum workout duration of 2 hours. When asked to predict for longer durations (e.g., 3 or 4 hours), the model would extrapolate its learned exponential curve, leading to physiologically impossible calorie estimates.
+
+To solve this, the app includes a dynamic safeguard:
+
+For workouts up to 2 hours, it uses the machine learning model directly.
+
+For workouts longer than 2 hours, it first calculates a baseline calorie burn at the 2-hour mark. It then uses this to create a personalized, linear burn rate (with a fatigue factor applied) to estimate the calories for the remaining duration. This prevents unrealistic predictions and makes the app more robust.
+
+The final web app uses this trained Lasso model, along with the specific scaling parameters and safeguards from the dataset, to make its predictions.

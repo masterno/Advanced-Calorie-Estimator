@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Calorie Estimator 3.0</title>
+    <title>Advanced Calorie Estimator 5.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -42,7 +42,7 @@
 
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-900">🚀 Advanced Calorie Estimator</h1>
-            <p class="text-gray-500 mt-2">Powered by a Lasso Regression model with corrected data.</p>
+            <p class="text-gray-500 mt-2">With dynamic safeguards for improved reliability.</p>
         </div>
 
         <form id="calorie-form" class="space-y-6">
@@ -80,6 +80,7 @@
         <div id="result-container" class="mt-8 text-center hidden">
             <p class="text-gray-600">Estimated Calories Burned:</p>
             <p id="result" class="text-4xl font-bold text-indigo-600 mt-2"></p>
+            <p id="warning-message" class="text-sm text-amber-600 mt-2 font-medium"></p>
         </div>
     </div>
 
@@ -89,130 +90,98 @@
                 marked.setOptions({ breaks: true, gfm: true });
             }
 
-            // --- MODEL PARAMETERS (UPDATED WITH CORRECTED DATA) ---
-            // 1. Coefficients from the final Lasso model
             const COEFFS = {
-                'Age': 16.6660,
-                'Weight (kg)': -184.1243,
-                'Session_Duration (hours)': -368.2917,
-                'Avg_BPM': 41.3277,
-                'Age Session_Duration (hours)': -48.5911,
-                'Age Avg_BPM': 3.2436,
-                'Age Gender_Male': 2.3678,
-                'Weight (kg)^2': 191.1884,
-                'Weight (kg) Session_Duration (hours)': -22.5554,
-                'Weight (kg) Avg_BPM': -5.2088,
-                'Weight (kg) Gender_Male': 47.9379,
-                'Session_Duration (hours)^2': 379.7605,
-                'Session_Duration (hours) Avg_BPM': 277.1162,
-                'Session_Duration (hours) Gender_Male': 46.9668,
-                'Avg_BPM^2': -113.6898,
-                'Avg_BPM Gender_Male': -1.0818,
-                'Gender_Male^2': -77.9887,
-                'intercept': 423.2727
+                'Age': 16.6660, 'Weight (kg)': -184.1243, 'Session_Duration (hours)': -368.2917, 'Avg_BPM': 41.3277,
+                'Age Session_Duration (hours)': -48.5911, 'Age Avg_BPM': 3.2436, 'Age Gender_Male': 2.3678, 'Weight (kg)^2': 191.1884,
+                'Weight (kg) Session_Duration (hours)': -22.5554, 'Weight (kg) Avg_BPM': -5.2088, 'Weight (kg) Gender_Male': 47.9379,
+                'Session_Duration (hours)^2': 379.7605, 'Session_Duration (hours) Avg_BPM': 277.1162, 'Session_Duration (hours) Gender_Male': 46.9668,
+                'Avg_BPM^2': -113.6898, 'Avg_BPM Gender_Male': -1.0818, 'Gender_Male^2': -77.9887, 'intercept': 423.2727
             };
-
-            // 2. Scaler parameters (mean and scale) for each feature
             const SCALER_MEANS = {
-                'Age': 39.4325,
-                'Weight (kg)': 74.9201,
-                'Session_Duration (hours)': 0.7878,
-                'Avg_BPM': 140.5803,
-                'Gender_Male': 0.4984,
-                'Age^2': 1710.1003,
-                'Age Weight (kg)': 2953.1030,
-                'Age Session_Duration (hours)': 30.9487,
-                'Age Avg_BPM': 5541.9994,
-                'Age Gender_Male': 19.5582,
-                'Weight (kg)^2': 5879.7037,
-                'Weight (kg) Session_Duration (hours)': 58.9273,
-                'Weight (kg) Avg_BPM': 10531.3299,
-                'Weight (kg) Gender_Male': 38.4728,
-                'Session_Duration (hours)^2': 0.7303,
-                'Session_Duration (hours) Avg_BPM': 111.2020,
-                'Session_Duration (hours) Gender_Male': 0.3953,
-                'Avg_BPM^2': 20245.8137,
-                'Avg_BPM Gender_Male': 70.3829,
-                'Gender_Male^2': 0.4984,
+                'Age': 39.4325, 'Weight (kg)': 74.9201, 'Session_Duration (hours)': 0.7878, 'Avg_BPM': 140.5803, 'Gender_Male': 0.4984,
+                'Age^2': 1710.1003, 'Age Weight (kg)': 2953.1030, 'Age Session_Duration (hours)': 30.9487, 'Age Avg_BPM': 5541.9994,
+                'Age Gender_Male': 19.5582, 'Weight (kg)^2': 5879.7037, 'Weight (kg) Session_Duration (hours)': 58.9273,
+                'Weight (kg) Avg_BPM': 10531.3299, 'Weight (kg) Gender_Male': 38.4728, 'Session_Duration (hours)^2': 0.7303,
+                'Session_Duration (hours) Avg_BPM': 111.2020, 'Session_Duration (hours) Gender_Male': 0.3953, 'Avg_BPM^2': 20245.8137,
+                'Avg_BPM Gender_Male': 70.3829, 'Gender_Male^2': 0.4984,
             };
             const SCALER_SCALES = {
-                'Age': 12.4571,
-                'Weight (kg)': 16.3302,
-                'Session_Duration (hours)': 0.3311,
-                'Avg_BPM': 21.9770,
-                'Gender_Male': 0.5000,
-                'Age^2': 982.6854,
-                'Age Weight (kg)': 1151.1653,
-                'Age Session_Duration (hours)': 16.3893,
-                'Age Avg_BPM': 1968.8360,
-                'Age Gender_Male': 21.5176,
-                'Weight (kg)^2': 2545.3048,
-                'Weight (kg) Session_Duration (hours)': 28.4044,
-                'Weight (kg) Avg_BPM': 2858.2369,
-                'Weight (kg) Gender_Male': 40.4516,
-                'Session_Duration (hours)^2': 0.6676,
-                'Session_Duration (hours) Avg_BPM': 50.9472,
-                'Session_Duration (hours) Gender_Male': 0.4617,
-                'Avg_BPM^2': 6168.1215,
-                'Avg_BPM Gender_Male': 72.2530,
-                'Gender_Male^2': 0.5000,
+                'Age': 12.4571, 'Weight (kg)': 16.3302, 'Session_Duration (hours)': 0.3311, 'Avg_BPM': 21.9770, 'Gender_Male': 0.5000,
+                'Age^2': 982.6854, 'Age Weight (kg)': 1151.1653, 'Age Session_Duration (hours)': 16.3893, 'Age Avg_BPM': 1968.8360,
+                'Age Gender_Male': 21.5176, 'Weight (kg)^2': 2545.3048, 'Weight (kg) Session_Duration (hours)': 28.4044,
+                'Weight (kg) Avg_BPM': 2858.2369, 'Weight (kg) Gender_Male': 40.4516, 'Session_Duration (hours)^2': 0.6676,
+                'Session_Duration (hours) Avg_BPM': 50.9472, 'Session_Duration (hours) Gender_Male': 0.4617, 'Avg_BPM^2': 6168.1215,
+                'Avg_BPM Gender_Male': 72.2530, 'Gender_Male^2': 0.5000,
             };
-
 
             const form = document.getElementById('calorie-form');
             const resultContainer = document.getElementById('result-container');
             const resultElement = document.getElementById('result');
+            const warningElement = document.getElementById('warning-message');
 
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
-
-                // Get user inputs
-                const age = parseFloat(document.getElementById('age').value);
-                const weight = parseFloat(document.getElementById('weight').value);
-                const duration = parseFloat(document.getElementById('duration').value);
-                const bpm = parseFloat(document.getElementById('avg_bpm').value);
-                const genderMale = parseInt(document.getElementById('gender').value, 10);
-
-                // Create a dictionary of the raw engineered features
+            function calculatePrediction(age, weight, duration, bpm, genderMale) {
                 const raw_features = {
                     'Age': age, 'Weight (kg)': weight, 'Session_Duration (hours)': duration, 'Avg_BPM': bpm, 'Gender_Male': genderMale,
-                    'Age^2': age * age,
-                    'Age Weight (kg)': age * weight,
-                    'Age Session_Duration (hours)': age * duration,
-                    'Age Avg_BPM': age * bpm,
-                    'Age Gender_Male': age * genderMale,
-                    'Weight (kg)^2': weight * weight,
-                    'Weight (kg) Session_Duration (hours)': weight * duration,
-                    'Weight (kg) Avg_BPM': weight * bpm,
-                    'Weight (kg) Gender_Male': weight * genderMale,
-                    'Session_Duration (hours)^2': duration * duration,
-                    'Session_Duration (hours) Avg_BPM': duration * bpm,
-                    'Session_Duration (hours) Gender_Male': duration * genderMale,
-                    'Avg_BPM^2': bpm * bpm,
-                    'Avg_BPM Gender_Male': bpm * genderMale,
-                    'Gender_Male^2': genderMale * genderMale
+                    'Age^2': age * age, 'Age Weight (kg)': age * weight, 'Age Session_Duration (hours)': age * duration,
+                    'Age Avg_BPM': age * bpm, 'Age Gender_Male': age * genderMale, 'Weight (kg)^2': weight * weight,
+                    'Weight (kg) Session_Duration (hours)': weight * duration, 'Weight (kg) Avg_BPM': weight * bpm,
+                    'Weight (kg) Gender_Male': weight * genderMale, 'Session_Duration (hours)^2': duration * duration,
+                    'Session_Duration (hours) Avg_BPM': duration * bpm, 'Session_Duration (hours) Gender_Male': duration * genderMale,
+                    'Avg_BPM^2': bpm * bpm, 'Avg_BPM Gender_Male': bpm * genderMale, 'Gender_Male^2': genderMale * genderMale
                 };
                 
-                // Scale the features
                 const scaled_features = {};
                 for (const feature in SCALER_MEANS) {
                     if (raw_features.hasOwnProperty(feature)) {
-                        const mean = SCALER_MEANS[feature];
-                        const scale = SCALER_SCALES[feature];
-                        scaled_features[feature] = (raw_features[feature] - mean) / scale;
+                        scaled_features[feature] = (raw_features[feature] - SCALER_MEANS[feature]) / SCALER_SCALES[feature];
                     }
                 }
 
-                // Calculate the prediction using scaled features
                 let prediction = COEFFS.intercept;
                 for (const feature in scaled_features) {
                     if (COEFFS.hasOwnProperty(feature)) {
                         prediction += scaled_features[feature] * COEFFS[feature];
                     }
                 }
+                return prediction;
+            }
 
-                // Display the result
-                resultElement.textContent = `${Math.max(0, prediction).toFixed(0)} kcal`;
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                warningElement.textContent = ''; // Clear previous warnings
+
+                const age = parseFloat(document.getElementById('age').value);
+                const weight = parseFloat(document.getElementById('weight').value);
+                const duration = parseFloat(document.getElementById('duration').value);
+                const bpm = parseFloat(document.getElementById('avg_bpm').value);
+                const genderMale = parseInt(document.getElementById('gender').value, 10);
+
+                let finalPrediction;
+                const DURATION_CAP = 2.0; // Max duration from training data
+                const FATIGUE_FACTOR = 0.75; // Assume 75% intensity can be maintained
+
+                if (duration > DURATION_CAP) {
+                    // Calculate the baseline burn at the 2-hour mark using the model
+                    const baselineCalories = calculatePrediction(age, weight, DURATION_CAP, bpm, genderMale);
+                    
+                    // Determine the personalized hourly burn rate from the baseline
+                    const personalizedBurnRate = baselineCalories / DURATION_CAP;
+                    
+                    // Apply the fatigue factor to get a sustainable rate
+                    const sustainedBurnRate = personalizedBurnRate * FATIGUE_FACTOR;
+
+                    // Calculate the additional burn for the time beyond 2 hours
+                    const extraHours = duration - DURATION_CAP;
+                    const extraCalories = extraHours * sustainedBurnRate;
+                    
+                    finalPrediction = baselineCalories + extraCalories;
+                    warningElement.textContent = `Note: A personalized, linear estimate was used for time beyond 2 hours.`;
+                } else {
+                    // Use the model directly for durations within the trained range
+                    finalPrediction = calculatePrediction(age, weight, duration, bpm, genderMale);
+                }
+
+                resultElement.textContent = `${Math.max(0, finalPrediction).toFixed(0)} kcal`;
                 resultContainer.classList.remove('hidden');
             });
             
@@ -250,7 +219,7 @@
         <div class="flex items-center justify-between px-4 py-3 border-b">
           <h2 class="text-lg font-semibold">Project Readme</h2>
           <button id="close-readme" class="p-2 rounded hover:bg-gray-100" aria-label="Close readme">
-            <svg xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
