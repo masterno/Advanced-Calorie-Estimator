@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Calorie Estimator 2.0</title>
+    <title>Advanced Calorie Estimator 3.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -12,58 +12,23 @@
             font-family: 'Inter', sans-serif;
         }
         /* Minimal typography for README content */
-        #readme-content {
-            line-height: 1.7;
-        }
+        #readme-content { line-height: 1.7; }
         #readme-content h1, 
         #readme-content h2, 
         #readme-content h3, 
-        #readme-content h4 {
-            margin-top: 1.25rem;
-            margin-bottom: 0.75rem;
-            font-weight: 700;
-        }
+        #readme-content h4 { margin-top: 1.25rem; margin-bottom: 0.75rem; font-weight: 700; }
         #readme-content h1 { font-size: 1.75rem; }
         #readme-content h2 { font-size: 1.5rem; }
         #readme-content h3 { font-size: 1.25rem; }
         #readme-content p { margin: 0.75rem 0; }
-        #readme-content ul, #readme-content ol { 
-            margin: 0.75rem 0 0.75rem 1.25rem; 
-            padding-left: 1rem; 
-        }
+        #readme-content ul, #readme-content ol { margin: 0.75rem 0 0.75rem 1.25rem; padding-left: 1rem; }
         #readme-content li { margin: 0.4rem 0; }
         #readme-content a { color: #4f46e5; text-decoration: underline; }
-        #readme-content code { 
-            background: #f3f4f6; 
-            padding: 0.1rem 0.3rem; 
-            border-radius: 0.25rem; 
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            font-size: 0.95em;
-        }
-        #readme-content pre {
-            background: #0b1020; 
-            color: #e5e7eb;
-            padding: 0.75rem; 
-            border-radius: 0.5rem; 
-            overflow: auto; 
-            margin: 1rem 0; 
-        }
-        #readme-content blockquote {
-            border-left: 4px solid #e5e7eb;
-            padding-left: 0.75rem;
-            color: #6b7280;
-            margin: 0.75rem 0;
-        }
-        #readme-content table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 1rem 0; 
-            font-size: 0.95rem;
-        }
-        #readme-content th, #readme-content td { 
-            border: 1px solid #e5e7eb; 
-            padding: 0.5rem 0.6rem; 
-        }
+        #readme-content code { background: #f3f4f6; padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.95em; }
+        #readme-content pre { background: #0b1020; color: #e5e7eb; padding: 0.75rem; border-radius: 0.5rem; overflow: auto; margin: 1rem 0; }
+        #readme-content blockquote { border-left: 4px solid #e5e7eb; padding-left: 0.75rem; color: #6b7280; margin: 0.75rem 0; }
+        #readme-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+        #readme-content th, #readme-content td { border: 1px solid #e5e7eb; padding: 0.5rem 0.6rem; }
         #readme-content th { background: #f9fafb; text-align: left; }
     </style>
 </head>
@@ -77,7 +42,7 @@
 
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-900">🚀 Advanced Calorie Estimator</h1>
-            <p class="text-gray-500 mt-2">Powered by a machine learning model with engineered features.</p>
+            <p class="text-gray-500 mt-2">Powered by a Lasso Regression model with corrected data.</p>
         </div>
 
         <form id="calorie-form" class="space-y-6">
@@ -96,7 +61,7 @@
             </div>
              <div>
                 <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-                <input type="number" id="weight" step="0.1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition" placeholder="e.g., 70.5">
+                <input type="number" id="weight" step="0.1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition" placeholder="e.g., 75.5">
             </div>
             <div>
                 <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">Session Duration (hours)</label>
@@ -120,34 +85,79 @@
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            // Improve Markdown line break behavior
             if (window.marked && marked.setOptions) {
                 marked.setOptions({ breaks: true, gfm: true });
             }
-            // Coefficients from the final Linear Regression model trained on engineered features (USER'S RESULTS)
+
+            // --- MODEL PARAMETERS (UPDATED WITH CORRECTED DATA) ---
+            // 1. Coefficients from the final Lasso model
             const COEFFS = {
-                'Age': 1.9526,
-                'Weight (kg)': -4.8886,
-                'Session_Duration (hours)': -950.4475,
-                'Avg_BPM': -0.5841,
-                'Gender_Male': 16.2391,
-                'Age^2': -0.0064,
-                'Age * Weight (kg)': -0.0348,
-                'Age * Session_Duration (hours)': -1.5721,
-                'Age * Avg_BPM': 0.0027,
-                'Age * Gender_Male': 0.6243,
-                'Weight (kg)^2': -0.0394,
-                'Weight (kg) * Session_Duration (hours)': 6.6299,
-                'Weight (kg) * Avg_BPM': 0.0695,
-                'Weight (kg) * Gender_Male': -0.1314,
-                'Session_Duration (hours)^2': 329.4016,
-                'Session_Duration (hours) * Avg_BPM': 2.6511, // Assuming this was the missing feature name from the previous model
-                'Session_Duration (hours) * Gender_Male': -61.4166,
-                'Avg_BPM^2': -0.0153,
-                'Avg_BPM * Gender_Male': -0.1154,
-                'Gender_Male^2': 16.2391,
-                'intercept': 571.2527
+                'Age': 16.6660,
+                'Weight (kg)': -184.1243,
+                'Session_Duration (hours)': -368.2917,
+                'Avg_BPM': 41.3277,
+                'Age Session_Duration (hours)': -48.5911,
+                'Age Avg_BPM': 3.2436,
+                'Age Gender_Male': 2.3678,
+                'Weight (kg)^2': 191.1884,
+                'Weight (kg) Session_Duration (hours)': -22.5554,
+                'Weight (kg) Avg_BPM': -5.2088,
+                'Weight (kg) Gender_Male': 47.9379,
+                'Session_Duration (hours)^2': 379.7605,
+                'Session_Duration (hours) Avg_BPM': 277.1162,
+                'Session_Duration (hours) Gender_Male': 46.9668,
+                'Avg_BPM^2': -113.6898,
+                'Avg_BPM Gender_Male': -1.0818,
+                'Gender_Male^2': -77.9887,
+                'intercept': 423.2727
             };
+
+            // 2. Scaler parameters (mean and scale) for each feature
+            const SCALER_MEANS = {
+                'Age': 39.4325,
+                'Weight (kg)': 74.9201,
+                'Session_Duration (hours)': 0.7878,
+                'Avg_BPM': 140.5803,
+                'Gender_Male': 0.4984,
+                'Age^2': 1710.1003,
+                'Age Weight (kg)': 2953.1030,
+                'Age Session_Duration (hours)': 30.9487,
+                'Age Avg_BPM': 5541.9994,
+                'Age Gender_Male': 19.5582,
+                'Weight (kg)^2': 5879.7037,
+                'Weight (kg) Session_Duration (hours)': 58.9273,
+                'Weight (kg) Avg_BPM': 10531.3299,
+                'Weight (kg) Gender_Male': 38.4728,
+                'Session_Duration (hours)^2': 0.7303,
+                'Session_Duration (hours) Avg_BPM': 111.2020,
+                'Session_Duration (hours) Gender_Male': 0.3953,
+                'Avg_BPM^2': 20245.8137,
+                'Avg_BPM Gender_Male': 70.3829,
+                'Gender_Male^2': 0.4984,
+            };
+            const SCALER_SCALES = {
+                'Age': 12.4571,
+                'Weight (kg)': 16.3302,
+                'Session_Duration (hours)': 0.3311,
+                'Avg_BPM': 21.9770,
+                'Gender_Male': 0.5000,
+                'Age^2': 982.6854,
+                'Age Weight (kg)': 1151.1653,
+                'Age Session_Duration (hours)': 16.3893,
+                'Age Avg_BPM': 1968.8360,
+                'Age Gender_Male': 21.5176,
+                'Weight (kg)^2': 2545.3048,
+                'Weight (kg) Session_Duration (hours)': 28.4044,
+                'Weight (kg) Avg_BPM': 2858.2369,
+                'Weight (kg) Gender_Male': 40.4516,
+                'Session_Duration (hours)^2': 0.6676,
+                'Session_Duration (hours) Avg_BPM': 50.9472,
+                'Session_Duration (hours) Gender_Male': 0.4617,
+                'Avg_BPM^2': 6168.1215,
+                'Avg_BPM Gender_Male': 72.2530,
+                'Gender_Male^2': 0.5000,
+            };
+
 
             const form = document.getElementById('calorie-form');
             const resultContainer = document.getElementById('result-container');
@@ -163,33 +173,41 @@
                 const bpm = parseFloat(document.getElementById('avg_bpm').value);
                 const genderMale = parseInt(document.getElementById('gender').value, 10);
 
-                // Create a dictionary of the raw features
-                const features = {
+                // Create a dictionary of the raw engineered features
+                const raw_features = {
                     'Age': age, 'Weight (kg)': weight, 'Session_Duration (hours)': duration, 'Avg_BPM': bpm, 'Gender_Male': genderMale,
                     'Age^2': age * age,
-                    'Age * Weight (kg)': age * weight,
-                    'Age * Session_Duration (hours)': age * duration,
-                    'Age * Avg_BPM': age * bpm,
-                    'Age * Gender_Male': age * genderMale,
+                    'Age Weight (kg)': age * weight,
+                    'Age Session_Duration (hours)': age * duration,
+                    'Age Avg_BPM': age * bpm,
+                    'Age Gender_Male': age * genderMale,
                     'Weight (kg)^2': weight * weight,
-                    'Weight (kg) * Session_Duration (hours)': weight * duration,
-                    'Weight (kg) * Avg_BPM': weight * bpm,
-                    'Weight (kg) * Gender_Male': weight * genderMale,
+                    'Weight (kg) Session_Duration (hours)': weight * duration,
+                    'Weight (kg) Avg_BPM': weight * bpm,
+                    'Weight (kg) Gender_Male': weight * genderMale,
                     'Session_Duration (hours)^2': duration * duration,
-                    'Session_Duration (hours) * Avg_BPM': duration * bpm,
-                    'Session_Duration (hours) * Gender_Male': duration * genderMale,
+                    'Session_Duration (hours) Avg_BPM': duration * bpm,
+                    'Session_Duration (hours) Gender_Male': duration * genderMale,
                     'Avg_BPM^2': bpm * bpm,
-                    'Avg_BPM * Gender_Male': bpm * genderMale,
+                    'Avg_BPM Gender_Male': bpm * genderMale,
                     'Gender_Male^2': genderMale * genderMale
                 };
+                
+                // Scale the features
+                const scaled_features = {};
+                for (const feature in SCALER_MEANS) {
+                    if (raw_features.hasOwnProperty(feature)) {
+                        const mean = SCALER_MEANS[feature];
+                        const scale = SCALER_SCALES[feature];
+                        scaled_features[feature] = (raw_features[feature] - mean) / scale;
+                    }
+                }
 
-                // Calculate the prediction
+                // Calculate the prediction using scaled features
                 let prediction = COEFFS.intercept;
-                for (const feature in features) {
+                for (const feature in scaled_features) {
                     if (COEFFS.hasOwnProperty(feature)) {
-                        // A check to handle the potentially misnamed feature
-                        const featureName = feature === 'Session_Duration (hours) * Avg_BPM' && COEFFS[':'] ? ':' : feature;
-                        prediction += features[feature] * COEFFS[featureName];
+                        prediction += scaled_features[feature] * COEFFS[feature];
                     }
                 }
 
@@ -198,15 +216,13 @@
                 resultContainer.classList.remove('hidden');
             });
             
-            // README modal logic
+            // README modal logic (unchanged)
             const openBtn = document.getElementById('open-readme');
             const modal = document.getElementById('readme-modal');
             const modalContent = document.getElementById('readme-content');
             const closeBtn = document.getElementById('close-readme');
-
             function openModal() {
                 modal.classList.remove('hidden');
-                // Lazy-load README.md and render
                 if (!modalContent.dataset.loaded) {
                     fetch('./README.md')
                         .then(r => r.ok ? r.text() : Promise.reject(r.status))
@@ -215,22 +231,13 @@
                             modalContent.dataset.loaded = 'true';
                         })
                         .catch(() => {
-                            modalContent.innerHTML = `
-                              <div class="text-left space-y-2">
-                                <p class="text-sm text-red-600">Could not load README.md.</p>
-                                <a class="text-indigo-600 underline" href="https://github.com/masterno/Advanced-Calorie-Estimator" target="_blank" rel="noopener">View on GitHub</a>
-                              </div>`;
+                            modalContent.innerHTML = `<div class="text-left space-y-2"><p class="text-sm text-red-600">Could not load README.md.</p><a class="text-indigo-600 underline" href="https://github.com/masterno/Advanced-Calorie-Estimator" target="_blank" rel="noopener">View on GitHub</a></div>`;
                         });
                 }
             }
-
-            function closeModal() {
-                modal.classList.add('hidden');
-            }
-
+            function closeModal() { modal.classList.add('hidden'); }
             if (openBtn) openBtn.addEventListener('click', openModal);
             if (closeBtn) closeBtn.addEventListener('click', closeModal);
-            // Close when clicking backdrop
             document.addEventListener('click', (e) => {
                 if (e.target === modal) closeModal();
             });
@@ -243,7 +250,7 @@
         <div class="flex items-center justify-between px-4 py-3 border-b">
           <h2 class="text-lg font-semibold">Project Readme</h2>
           <button id="close-readme" class="p-2 rounded hover:bg-gray-100" aria-label="Close readme">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <svg xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
